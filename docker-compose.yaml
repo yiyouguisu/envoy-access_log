@@ -5,6 +5,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile-frontenvoy
+    image: yiyouguisu/envoy_access-log:latest
     networks:
       - envoy_access_log_network
     expose:
