@@ -20,10 +20,21 @@ static_resources:
             config:
               path: "/var/log/envoy_access.log"
               format: |
-                {"protocol": "%PROTOCOL%", "duration": "%DURATION%", "request_method": "%REQ(:METHOD)%"}
+                {"protocol": "%PROTOCOL%", "request_time": "%DURATION%", "request_method": "%REQ(:METHOD)%", "request_id": "%REQ(X-REQUEST-ID)%", "status_code": "%RESP(status_code)%", "appid": "%REQ(appid)%"}
+              # format: |
+              #   [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%"
+          - name: envoy.file_access_log
+            filter:
+              response_flag_filter:
+                flags: ['UO']
+            config:
+              path: "/var/log/envoy_circuit_breaker.log"
+              format: |
+                {"protocol": "%PROTOCOL%", "request_time": "%DURATION%", "request_method": "%REQ(:METHOD)%", "request_id": "%REQ(X-REQUEST-ID)%", "status_code": "%RESP(status_code)%", "appid": "%REQ(appid)%"}
               # format: |
               #   [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%"
           generate_request_id: true
+          use_remote_address: true
           tracing:
             operation_name: egress
           codec_type: auto
@@ -40,6 +51,17 @@ static_resources:
                 route:
                   cluster: service1
           http_filters:
+          - name: envoy.lua
+            config:
+              inline_code: |
+                function envoy_on_request(request_handle)
+                  request_handle:logInfo("aaaaaaaaaaa")
+                  request_handle:headers():add("appid", "data")
+                end
+                function envoy_on_response(response_handle)
+                  response_handle:logInfo("bbbbbbbbbbb")
+                  response_handle:headers():add("status_code", "500001")
+                end
           - name: envoy.router
             config: {}
   clusters:
