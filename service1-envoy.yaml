@@ -8,6 +8,12 @@ static_resources:
     - filters:
       - name: envoy.http_connection_manager
         config:
+          access_log:
+          - name: envoy.file_access_log
+            config:
+              path: "/var/log/envoy_access.log"
+              format: |
+                {"upstream_host": "%UPSTREAM_HOST%", "upstream_cluster": "%UPSTREAM_CLUSTER%","kind": "server", "response_flags": "%RESPONSE_FLAGS%", "access_time": "%START_TIME(%d/%b/%Y:%H:%M:%S %z)%", "remote": "%DOWNSTREAM_REMOTE_ADDRESS_WITHOUT_PORT%", "local": "%DOWNSTREAM_LOCAL_ADDRESS_WITHOUT_PORT%", "method": "%REQ(:METHOD)%", "path": "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%", "code": "%RESPONSE_CODE%", "status": "%RESP(status-code)%", "req_size": %BYTES_RECEIVED%, "res_size": %BYTES_SENT%, "traffic": 0, "request_time": %RESPONSE_DURATION%, "referer": "%REQ(Referer)%", "agent": "%REQ(USER-AGENT)%", "forwoad": "%REQ(X-FORWARDED-FOR)%", "request": "-", "response": "-", "uuid": "%REQ(X-REQUEST-ID)%", "app_id": "%REQ(appid)%", "health_level": "%RESP(health_level)%", "cr_service_code": "%REQ(X-Source-Service)%", "sr_service_code": "%REQ(X-Target-Service)%"}                      
           tracing:
             operation_name: ingress
           codec_type: auto

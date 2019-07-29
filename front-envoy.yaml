@@ -10,17 +10,10 @@ static_resources:
         config:
           access_log:
           - name: envoy.file_access_log
-            filter:
-              status_code_filter:
-                comparison:
-                  op: "GE"
-                  value:
-                    default_value: 200
-                    runtime_key: access_log_status_code
             config:
               path: "/var/log/envoy_access.log"
               format: |
-                {"protocol": "%PROTOCOL%", "request_time": "%DURATION%", "request_method": "%REQ(:METHOD)%", "request_id": "%REQ(X-REQUEST-ID)%", "status_code": "%RESP(status_code)%", "appid": "%REQ(appid)%"}
+                {"upstream_host": "%UPSTREAM_HOST%", "upstream_cluster": "%UPSTREAM_CLUSTER%", "kind": "client", "response_flags": "%RESPONSE_FLAGS%", "access_time": "%START_TIME(%d/%b/%Y:%H:%M:%S %z)%", "remote": "%DOWNSTREAM_REMOTE_ADDRESS_WITHOUT_PORT%", "local": "%DOWNSTREAM_LOCAL_ADDRESS_WITHOUT_PORT%", "method": "%REQ(:METHOD)%", "path": "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%", "code": "%RESPONSE_CODE%", "status": "%RESP(status-code)%", "req_size": %BYTES_RECEIVED%, "res_size": %BYTES_SENT%, "traffic": 0, "request_time": %DURATION%, "referer": "%REQ(Referer)%", "agent": "%REQ(USER-AGENT)%", "forwoad": "%REQ(X-FORWARDED-FOR)%", "request": "-", "response": "-", "uuid": "%REQ(X-REQUEST-ID)%", "app_id": "%REQ(appid)%", "health_level": "%RESP(health_level)%", "cr_service_code": "%REQ(X-Source-Service)%", "sr_service_code": "%REQ(X-Target-Service)%"}               
               # format: |
               #   [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%"
           - name: envoy.file_access_log
